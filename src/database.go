@@ -13,19 +13,18 @@ const (
 
 // Database contains data (key-value pairs)
 type Database struct {
-	data   map[string]string
-	n_keys int
-	port   int
+	data map[string]string
+	port int
 }
 
 // New creates and returns new instance of Database
-func (d Database) New(port int) Database {
+func New(port int) Database {
 
 	// init data map
 	data := make(map[string]string, START_DATA_CAP)
 
 	// create database
-	var database Database = Database{data: data, n_keys: 0, port: port}
+	var database Database = Database{data: data, port: port}
 
 	return database
 }
@@ -71,8 +70,12 @@ func (d *Database) Delete(key string) error {
 		return errors.New(MSG_KEY_NOT_EXIST)
 	}
 
-	// set to empty string -> delete
-	d.data[key] = ""
+	delete(d.data, key)
 
 	return nil
+}
+
+// Size get number of elements (data)
+func (d Database) Size() int {
+	return len(d.data)
 }

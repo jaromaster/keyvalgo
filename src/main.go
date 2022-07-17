@@ -6,10 +6,9 @@ func main() {
 	const PORT int = 8000
 
 	// create database
-	var database = Database{}.New(PORT)
+	var database = New(PORT)
 
 	database.Set("test", "test")
-	database.Delete("test")
 
-	fmt.Println(database.Get("test"))
+	fmt.Println(database.Size())
 }
