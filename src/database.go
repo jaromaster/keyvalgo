@@ -1,9 +1,13 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
-	START_DATA_CAP int = 10000
+	START_DATA_CAP int    = 10000 // start capacity of database
+	DB_START_TEXT  string = "starting database"
 
 	// error messages
 	MSG_KEY_EMPTY     = "key must not be empty"
@@ -25,6 +29,7 @@ func New(port int) Database {
 
 	// create database
 	var database Database = Database{data: data, port: port}
+	fmt.Println(DB_START_TEXT)
 
 	return database
 }
