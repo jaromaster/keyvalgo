@@ -13,6 +13,8 @@ const (
 	SET_VAL = "set"
 	GET_VAL = "get"
 	DEL_VAL = "delete"
+	EXPORT  = "export"
+	IMPORT  = "import"
 	EXIT    = "exit"
 )
 
@@ -57,7 +59,7 @@ func HandleConn(conn net.Conn, d *Database) error {
 	// starts with SET_VAL
 	if strings.HasPrefix(message, SET_VAL) {
 		// extract key and value
-		key_val := strings.ReplaceAll(message, SET_VAL, "") // "key:value"
+		key_val := strings.TrimSpace(strings.ReplaceAll(message, SET_VAL, "")) // "key:value"
 		key, val := strings.Split(key_val, ":")[0], strings.Split(key_val, ":")[1]
 
 		// set value
@@ -73,7 +75,7 @@ func HandleConn(conn net.Conn, d *Database) error {
 		// starts with GET_VAL
 	} else if strings.HasPrefix(message, GET_VAL) {
 		// extract key and value
-		key_val := strings.ReplaceAll(message, GET_VAL, "") // "key:value"
+		key_val := strings.TrimSpace(strings.ReplaceAll(message, GET_VAL, "")) // "key:value"
 		key := strings.Split(key_val, ":")[0]
 
 		// get value
@@ -89,11 +91,33 @@ func HandleConn(conn net.Conn, d *Database) error {
 		// starts with DEL_VAL
 	} else if strings.HasPrefix(message, DEL_VAL) {
 		// extract key and value
-		key_val := strings.ReplaceAll(message, DEL_VAL, "") // "key:value"
+		key_val := strings.TrimSpace(strings.ReplaceAll(message, DEL_VAL, "")) // "key:value"
 		key := strings.Split(key_val, ":")[0]
 
 		// delete value
 		err := d.Delete(key)
+		if err != nil {
+			conn.Write([]byte(err.Error() + "\n"))
+			return err
+		}
+
+		// send response
+		conn.Write([]byte("ok\n"))
+
+		// starts with EXPORT
+	} else if strings.HasPrefix(message, EXPORT) {
+		err := d.ExportCsv()
+		if err != nil {
+			conn.Write([]byte(err.Error() + "\n"))
+			return err
+		}
+
+		// send response
+		conn.Write([]byte("ok\n"))
+
+		// starts with IMPORT
+	} else if strings.HasPrefix(message, IMPORT) {
+		err := d.ImportCsv()
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err

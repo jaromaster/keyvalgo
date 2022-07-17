@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"os"
 )
 
 const (
 	START_DATA_CAP int    = 10000 // start capacity of database
 	DB_START_TEXT  string = "starting database"
+	PATH_CSV       string = "data.csv"
 
 	// error messages
 	MSG_KEY_EMPTY     = "key must not be empty"
@@ -83,4 +86,60 @@ func (d *Database) Delete(key string) error {
 // Size get number of elements (data)
 func (d Database) Size() int {
 	return len(d.data)
+}
+
+// ExportCsv exports keys and values to csv file
+func (d Database) ExportCsv() error {
+	file, err := os.Create(PATH_CSV)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+
+	// generate table
+	data := [][]string{{"KEY", "VALUE"}}
+	for k, v := range d.data {
+		row := []string{k, v}
+		data = append(data, row)
+	}
+
+	// export to file
+	err = writer.WriteAll(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ImportCsv imports keys and values from csv file
+func (d *Database) ImportCsv() error {
+	file, err := os.Open(PATH_CSV)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	rows, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	// insert into database
+	for i, row := range rows {
+		// skip header
+		if i == 0 {
+			continue
+		}
+
+		err := d.Set(row[0], row[1])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
