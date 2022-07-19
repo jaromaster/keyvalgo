@@ -21,7 +21,7 @@ const (
 )
 
 // HandleConnection allows clients to connect to database
-func HandleConnections(d *Database) error {
+func (d *Database) HandleConnections() error {
 
 	// listen
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", d.port))

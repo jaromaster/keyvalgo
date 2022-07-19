@@ -7,5 +7,5 @@ func main() {
 	var database = New(PORT)
 
 	// start server
-	HandleConnections(&database)
+	database.HandleConnections()
 }
