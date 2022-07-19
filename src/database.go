@@ -9,7 +9,7 @@ import (
 
 const (
 	START_DATA_CAP int    = 10000 // start capacity of database
-	DB_START_TEXT  string = "starting database"
+	DB_START_TEXT  string = "Starting database...done"
 	PATH_CSV       string = "data.csv"
 
 	// error messages
