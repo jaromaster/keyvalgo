@@ -9,6 +9,8 @@ import (
 )
 
 const (
+	OK = "ok"
+
 	// commands
 	SET_VAL = "set"
 	GET_VAL = "get"
@@ -59,24 +61,28 @@ func HandleConn(conn net.Conn, d *Database) error {
 	// starts with SET_VAL
 	if strings.HasPrefix(message, SET_VAL) {
 		// extract key and value
-		key_val := strings.TrimSpace(strings.ReplaceAll(message, SET_VAL, "")) // "key:value"
-		key, val := strings.Split(key_val, ":")[0], strings.Split(key_val, ":")[1]
+		key_val := strings.TrimSpace(strings.ReplaceAll(message, SET_VAL, "")) // should be "key:value"
+		args_list := strings.Split(key_val, ":")                               // should be ["key", "val"]
+
+		if len(args_list) != 2 {
+			invalid_args := "invalid number of arguments, should look like: set key:value"
+			conn.Write([]byte(invalid_args + "\n"))
+			return errors.New(invalid_args)
+		}
 
 		// set value
+		key, val := args_list[0], args_list[1]
 		err := d.Set(key, val)
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err
 		}
-
-		// send response
-		conn.Write([]byte("ok\n"))
+		conn.Write([]byte(OK + "\n"))
 
 		// starts with GET_VAL
 	} else if strings.HasPrefix(message, GET_VAL) {
-		// extract key and value
-		key_val := strings.TrimSpace(strings.ReplaceAll(message, GET_VAL, "")) // "key:value"
-		key := strings.Split(key_val, ":")[0]
+		// extract key
+		key := strings.TrimSpace(strings.ReplaceAll(message, GET_VAL, "")) // should be "key"
 
 		// get value
 		value, err := d.Get(key)
@@ -84,15 +90,12 @@ func HandleConn(conn net.Conn, d *Database) error {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err
 		}
-
-		// send response
 		conn.Write([]byte(value + "\n"))
 
 		// starts with DEL_VAL
 	} else if strings.HasPrefix(message, DEL_VAL) {
-		// extract key and value
-		key_val := strings.TrimSpace(strings.ReplaceAll(message, DEL_VAL, "")) // "key:value"
-		key := strings.Split(key_val, ":")[0]
+		// extract key
+		key := strings.TrimSpace(strings.ReplaceAll(message, DEL_VAL, "")) // "key"
 
 		// delete value
 		err := d.Delete(key)
@@ -100,36 +103,31 @@ func HandleConn(conn net.Conn, d *Database) error {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err
 		}
+		conn.Write([]byte(OK + "\n"))
 
-		// send response
-		conn.Write([]byte("ok\n"))
-
-		// starts with EXPORT
-	} else if strings.HasPrefix(message, EXPORT) {
+		// equals EXPORT
+	} else if message == EXPORT {
 		err := d.ExportCsv()
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err
 		}
+		conn.Write([]byte(OK + "\n"))
 
-		// send response
-		conn.Write([]byte("ok\n"))
-
-		// starts with IMPORT
-	} else if strings.HasPrefix(message, IMPORT) {
+		// equals IMPORT
+	} else if message == IMPORT {
 		err := d.ImportCsv()
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			return err
 		}
-
-		// send response
-		conn.Write([]byte("ok\n"))
+		conn.Write([]byte(OK + "\n"))
 
 		// unknown command
 	} else {
-		conn.Write([]byte("unknown command\n"))
-		return errors.New("unknown command")
+		uk_command := "unknown command"
+		conn.Write([]byte(uk_command + "\n"))
+		return errors.New(uk_command)
 	}
 
 	return nil
