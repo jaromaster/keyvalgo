@@ -18,5 +18,8 @@ func main() {
 	var database = New(PORT, password)
 
 	// start database server
-	database.HandleConnections()
+	err := database.HandleConnections()
+	if err != nil {
+		panic(err)
+	}
 }

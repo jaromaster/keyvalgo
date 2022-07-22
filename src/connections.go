@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -9,7 +10,10 @@ import (
 )
 
 const (
-	OK = "ok"
+	OK        = "ok"
+	CERT_DIR  = "tls/"
+	CERT_NAME = "server.crt"
+	KEY_NAME  = "server.key"
 
 	// commands
 	SET_VAL = "set"
@@ -23,8 +27,15 @@ const (
 // HandleConnection allows clients to connect to database
 func (d *Database) HandleConnections() error {
 
-	// listen
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", d.port))
+	// setup tls
+	cert, err := tls.LoadX509KeyPair(CERT_DIR+CERT_NAME, CERT_DIR+KEY_NAME)
+	if err != nil {
+		return err
+	}
+	tls_conf := &tls.Config{Certificates: []tls.Certificate{cert}}
+
+	// listen with tls
+	listener, err := tls.Listen("tcp", fmt.Sprintf(":%d", d.port), tls_conf)
 	if err != nil {
 		return err
 	}
