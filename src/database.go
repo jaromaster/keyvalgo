@@ -20,21 +20,27 @@ const (
 
 // Database contains data (key-value pairs)
 type Database struct {
-	data map[string]string
-	port int
+	data     map[string]string
+	port     int
+	password string
 }
 
 // New creates and returns new instance of Database
-func New(port int) Database {
+func New(port int, password string) Database {
 
 	// init data map
 	data := make(map[string]string, START_DATA_CAP)
 
 	// create database
-	var database Database = Database{data: data, port: port}
+	var database Database = Database{data: data, port: port, password: password}
 	fmt.Println(DB_START_TEXT)
 
 	return database
+}
+
+// Auth checks if given password is correct
+func (d Database) Auth(password string) bool {
+	return d.password == password
 }
 
 // Set assigns value to key

@@ -43,8 +43,20 @@ func (d *Database) HandleConnections() error {
 func HandleConn(conn net.Conn, d *Database) error {
 	defer conn.Close()
 
-	// read connection
 	reader := bufio.NewReader(conn)
+
+	// authenticate
+	conn.Write([]byte("Password: "))
+	password, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if !d.Auth(strings.TrimSpace(password)) {
+		conn.Write([]byte("Auth failed: incorrect password\n"))
+		return errors.New("password incorrect")
+	}
+
+	// read connection (payload)
 	message, err := reader.ReadString('\n')
 	if err != nil {
 		return err

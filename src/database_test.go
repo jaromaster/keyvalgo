@@ -8,7 +8,8 @@ import (
 // TestNew tests New function
 func TestNew(t *testing.T) {
 	port := 8000
-	database := New(port)
+	passw := "test"
+	database := New(port, passw)
 
 	if database.data == nil {
 		t.Log("data should not be nil")
@@ -26,7 +27,8 @@ func TestNew(t *testing.T) {
 
 // TestSet tests Set function
 func TestSet(t *testing.T) {
-	database := New(8000)
+	passw := "test"
+	database := New(8000, passw)
 
 	key, value := "key", "value"
 	err := database.Set(key, value)
@@ -38,7 +40,8 @@ func TestSet(t *testing.T) {
 
 // TestGet tests Get function
 func TestGet(t *testing.T) {
-	database := New(8000)
+	passw := "test"
+	database := New(8000, passw)
 
 	// insert value
 	key, value := "key", "value"
@@ -62,7 +65,8 @@ func TestGet(t *testing.T) {
 
 // TestDelete tests Delete function
 func TestDelete(t *testing.T) {
-	database := New(8000)
+	passw := "test"
+	database := New(8000, passw)
 
 	// add value
 	key, value := "key", "value"
@@ -99,7 +103,8 @@ func TestDelete(t *testing.T) {
 
 // TestSize tests Size function
 func TestSize(t *testing.T) {
-	database := New(8000)
+	passw := "test"
+	database := New(8000, passw)
 	count := 1
 
 	// add
@@ -123,6 +128,21 @@ func TestSize(t *testing.T) {
 
 	if database.Size() != count {
 		t.Log("count incorrect")
+		t.Fail()
+	}
+}
+
+// TestAuth tests Auth function
+func TestAuth(t *testing.T) {
+	passw := "test"
+	database := New(8000, passw)
+
+	if database.Auth("wrong password") {
+		t.Log("password should be identified as incorrect")
+		t.Fail()
+	}
+	if !database.Auth(passw) {
+		t.Log("password should be identified as correct")
 		t.Fail()
 	}
 }
